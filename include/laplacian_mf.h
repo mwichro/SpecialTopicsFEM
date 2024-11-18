@@ -14,8 +14,8 @@
 //
 // ---------------------------------------------------------------------
 
-#ifndef dealii_laplacian_h
-#define dealii_laplacian_h
+#ifndef dealii_laplacian_mf_h
+#define dealii_laplacian_mf_h
 
 #include <deal.II/base/quadrature_lib.h>
 
@@ -54,6 +54,9 @@ public:
   {
     return system_matrix;
   }
+
+  void
+  vmult_inverse(VectorType &dst, const VectorType &src) const;
 
   void
   initialize();

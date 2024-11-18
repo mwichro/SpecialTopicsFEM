@@ -2,16 +2,16 @@
 //
 // Copyright (C) 2024 by Luca Heltai
 //
-// This file is part of the bare-dealii-app application, based on the 
+// This file is part of the bare-dealii-app application, based on the
 // deal.II library.
 //
-// The bare-dealii-app application is free software; you can use it, 
+// The bare-dealii-app application is free software; you can use it,
 // redistribute it, and/or modify it under the terms of the Apache-2.0 License
-// WITH LLVM-exception as published by the Free Software Foundation; either 
+// WITH LLVM-exception as published by the Free Software Foundation; either
 // version 3.0 of the License, or (at your option) any later version.
 // The full text of the license can be found in the file LICENSE.md
-// at the top level of the bare-dealii-app distribution. 
-// 
+// at the top level of the bare-dealii-app distribution.
+//
 // ---------------------------------------------------------------------
 
 #ifndef dealii_laplacian_h
@@ -36,10 +36,13 @@ template <int dim>
 class Laplacian
 {
 public:
-  Laplacian();
+  Laplacian(Triangulation<dim> &tria, const unsigned int degree);
 
   void
-  run();
+  vmult(Vector<double> &dst, const Vector<double> &src) const;
+
+  void
+  intinlize();
 
 private:
   void
@@ -53,7 +56,7 @@ private:
   void
   output_results(const unsigned int cycle) const;
 
-  Triangulation<dim> triangulation;
+  Triangulation<dim> &triangulation;
 
   FE_Q<dim>       fe;
   DoFHandler<dim> dof_handler;

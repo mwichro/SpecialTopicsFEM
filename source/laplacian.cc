@@ -50,17 +50,15 @@ template <int dim>
 double
 coefficient(const Point<dim> &p)
 {
-  if (p.square() < 0.5 * 0.5)
-    return 20;
-  else
-    return 1;
+  return 1;
 }
 
 
 
 template <int dim>
-Laplacian<dim>::Laplacian()
-  : fe(2)
+Laplacian<dim>::Laplacian(Triangulation<dim> &tria, const unsigned int degree)
+  : triangulation(tria)
+  , fe(degree)
   , dof_handler(triangulation)
 {}
 
@@ -218,33 +216,17 @@ Laplacian<dim>::output_results(const unsigned int cycle) const
 
 template <int dim>
 void
-Laplacian<dim>::run()
+Laplacian<dim>::intinlize()
 {
-  for (unsigned int cycle = 0; cycle < 8; ++cycle)
-    {
-      std::cout << "Cycle " << cycle << ':' << std::endl;
+  std::cout << "   Number of active cells:       "
+            << triangulation.n_active_cells() << std::endl;
 
-      if (cycle == 0)
-        {
-          GridGenerator::hyper_ball(triangulation);
-          triangulation.refine_global(1);
-        }
-      else
-        refine_grid();
+  setup_system();
 
+  std::cout << "   Number of degrees of freedom: " << dof_handler.n_dofs()
+            << std::endl;
 
-      std::cout << "   Number of active cells:       "
-                << triangulation.n_active_cells() << std::endl;
-
-      setup_system();
-
-      std::cout << "   Number of degrees of freedom: " << dof_handler.n_dofs()
-                << std::endl;
-
-      assemble_system();
-      solve();
-      output_results(cycle);
-    }
+  assemble_system();
 }
 
 

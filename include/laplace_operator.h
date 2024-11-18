@@ -15,8 +15,10 @@ namespace LaplaceOperator
   class Operator : public MatrixFreeOperators::Base<dim>
   {
   public:
-    using Number     = double;
-    using VectorType = dealii::LinearAlgebra::distributed::Vector<Number>;
+    using Number = double;
+    // using VectorType = dealii::LinearAlgebra::distributed::Vector<Number>;
+
+    using VectorType                     = dealii::Vector<Number>;
     const static unsigned int n_q_points = degree + 1;
 
     Operator();
