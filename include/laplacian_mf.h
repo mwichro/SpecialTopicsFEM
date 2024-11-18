@@ -109,9 +109,11 @@ LaplacianMatrixFree<dim, degree>::setup_system()
 
   matrix_free_storage = std::make_shared<MatrixFree<dim, Number>>();
 
-  matrix_free_storage->reinit(dof_handler,
+  MappingQ1<dim> mapping;
+  matrix_free_storage->reinit(mapping,
+                              dof_handler,
                               constraints,
-                              QGauss<1>(degree + 1),
+                              QGauss<1>(fe.degree + 1),
                               additional_data);
 
   matrix_free_storage->initialize_dof_vector(solution);
