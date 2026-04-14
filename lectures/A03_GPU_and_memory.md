@@ -38,7 +38,7 @@ Why are they idle? Because they are waiting for the numbers to arrive from the m
 
 No matter how fast the factory works, total performance is strictly limited by how many trucks can drive down the highway at once. In Matrix-Free solvers, we are almost always **Memory Bound**, meaning our speed is entirely dictated by memory bandwidth, not computational limits.
 
-
+Check out *Figure 4: The scaling...* at https://medium.com/riselab/ai-and-memory-wall-2cb4265cb0b8 The progress on compute capabiliteis is much faster then bandwith
 
 ### Interlude 2: Arithmetic Intensity (FLOPs per Byte)
 
