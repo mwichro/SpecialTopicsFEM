@@ -117,26 +117,53 @@ In Matrix-Free FEM, our Einstein summations (`jnp.einsum`) generate massive, com
 
 ---
 
-## 2. GPU Architecture 101: Hardware and Memory Hierarchy
 
-To understand why XLA's fusion is critical, we need to look at the physical GPU. A GPU is not just a fast CPU; it is a throughput machine built for massive parallelism.
+## 2. GPU Architecture 101: Hardware, Memory, and Tensor Cores
 
-### Compute
-* **Streaming Multiprocessors (SMs):** A modern GPU consists of many SMs (e.g., an NVIDIA A100 has 108 SMs). Each SM contains multiple cores.
+To understand why XLA's fusion is critical, and why we structure our math as tensor contractions, we need to look at the physical GPU. A GPU is not just a fast CPU; it is a specialized throughput machine built for massive parallelism.
+
+### 2.1 The Compute Engine: Cores and Warps
+* **Streaming Multiprocessors (SMs):** A modern GPU consists of many SMs (e.g., an NVIDIA A100 has 108 SMs). Each SM contains multiple execution cores.
 * **Warps:** Threads don't execute totally independently. They are bundled into groups of 32, called a **Warp**. All 32 threads in a warp execute the *exact same instruction* at the *exact same time*, just on different data (SIMT: Single Instruction, Multiple Threads).
 
-### The Memory Hierarchy
-The biggest bottleneck in Matrix-Free solvers is almost never compute (FLOPs); it is **Memory Bandwidth** (moving data to the cores).
-1. **HBM (High Bandwidth Memory) / Global Memory:** 
-   * The main GPU memory (e.g., 40GB or 80GB). 
-   * Extremely large, but relatively **slow** and very far from the compute cores.
-2. **Shared Memory (SRAM):** 
-   * Tiny (e.g., ~164 KB per SM), physically located right next to the cores. 
-   * It is roughly 100x faster than HBM. 
-   * It acts as a user-managed cache. All threads in the same thread block can read and write to the same Shared Memory.
-3. **Registers:** 
-   * The absolute fastest memory. Private to each individual thread. 
+### 2.2 Tensor Cores and MMA (Matrix-Multiply-Accumulate)
+Historically, standard GPU cores performed **FMA (Fused Multiply-Add)** on scalars: `d = a * b + c`. One operation per thread, per clock cycle. 
 
+Modern GPUs (starting significantly with Volta, and perfected in the A100/H100) dedicate vast amounts of physical silicon to **Tensor Cores**.
+* **What they do:** Instead of scalar math, a Tensor Core executes a hardware-level **MMA (Matrix-Multiply-Accumulate)** instruction. It takes small block matrices (e.g., 4x4 or 8x8) and computes $D = A \times B + C$ in a *single clock cycle*.
+* **Why it matters for us:** Our Matrix-Free sum factorization (e.g., applying 1D operators to slices of a 2D grid) translates perfectly into small block matrix multiplications. When XLA compiles our `jnp.einsum` code, it maps these dense local contractions directly onto the Tensor Cores. This yields a massive, order-of-magnitude leap in FLOPs compared to traditional sparse-matrix solvers which cannot use Tensor Cores.
+
+### 2.3 Hardware Support for Transposition
+In tensor contractions (like switching from processing horizontal slices to vertical slices), we are constantly permuting indices. Mathematically, this is **transposition**.
+* **The historical problem:** Transposing a matrix requires reading rows and writing columns. This destroys memory coalescing, resulting in catastrophic memory slowdowns.
+* **The hardware solution:** Modern GPUs feature specialized instructions (like `ldmatrix`) and shared memory routing that allow them to load a tile of data from main memory and **transpose it on-the-fly** as it moves into the cores, with near-zero performance penalty. When we write `einsum('ij, kj -> ik', ...)`, the hardware handles the index swapping natively.
+
+### 2.4 The Memory Hierarchy
+As discussed, computing is fast, but feeding the cores is hard. 
+1. **HBM (High Bandwidth Memory) / Global Memory:** The main GPU memory. Very large, but relatively slow and far from the cores.
+2. **Shared Memory (SRAM):** Tiny (e.g., ~164 KB per SM), but located right next to the cores. It is roughly 100x faster than HBM and acts as a user-managed cache. All threads in a block can read/write to the same Shared Memory.
+3. **Registers:** The absolute fastest memory. Private to each individual thread.
+
+> Note 1: In comparison to CPU RAM, HBM is very close to the GPU chip, it is connected directly via interposer. Those units are soldered toghether 
+
+> Note 2: HBM is a bunch of chips stacked vertically and soldered toghether. That is why it is so expesive.
+
+### 2.5 The Reality Check: A100 GPU vs. High-End CPU
+To put these architectural differences into perspective, let's look at the raw physical limits of a top-tier server CPU (e.g., 64-core AMD EPYC) versus an NVIDIA A100 GPU.
+
+
+| Metric | NVIDIA A100 (80GB) | NVIDIA Grace | AMD EPYC 9754 (Bergamo) | Intel Xeon 8592+ (Emerald Rapids) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Architecture** | GPU (Ampere) | CPU (ARM Neoverse V2) | CPU (x86 Zen 4c) | CPU (x86 Raptor Cove) |
+| **FP64 TFLOPs** | **9.7** | **7.1** | ~4.5–5.0 | ~3.7–4.0 |
+| **FP32 TFLOPs** | **19.5** | **14.2** | ~9.0–10.0 | **15.5 – 23.7** |
+| **AI/Tensor notes.** | **312** (FP16)/**156** (TF32)  
+| **Memory Bandwidth**| **2,039 GB/s** | **1,000 GB/s** | **460.8 GB/s** | **358.4 GB/s** |
+| **Memory Type** | HBM2e | LPDDR5X (On-module) | DDR5-4800 (12-ch) | DDR5-5600 (8-ch) |
+
+> The CPU is a generalist; it handles messy, branching code brilliantly. The GPU is a specialist. **If**—and ONLY if—we structure our FEM solver as dense, coalesced tensor contractions, we gain access to 10 times the memory bandwidth and nearly 20 TeraFLOPs of compute power.
+
+> Intel Advanced Matrix Extensions (AMX) are the CPU-level equivalent of NVIDIA’s MMA (Matrix Multiply-Accumulate) units (commonly known as Tensor Cores). While traditional CPU instructions (like AVX-512) handle data in 1D vectors, AMX is designed to operate on 2D matrices (called "tiles") in a single operation.
 ---
 
 ## 3. Memory Coalescing: The Key to GPU Performance
@@ -179,6 +206,7 @@ Historically, writing custom GPU kernels meant writing raw CUDA in C++. It requi
 * Instead of programming *individual threads* (SIMT), Triton allows you to program *blocks of threads*.
 * You define operations on smaller "blocks" of data (e.g., 64x64 tiles). 
 * **The Magic of Triton:** Because you are operating on contiguous blocks, Triton's compiler *automatically handles the memory coalescing and Shared Memory allocation for you*. It provides a high-level, Pythonic interface that achieves ~90-95% of the performance of ninja-level raw C++ CUDA.
+* There exist `jax-triton` package that allows execution of `triton` kernels on JAX arrays.
 
 ### Pallas (The JAX Interface)
 JAX cannot natively execute Triton code out of the box because JAX needs to know how to trace and differentiate everything. 
@@ -186,7 +214,7 @@ JAX cannot natively execute Triton code out of the box because JAX needs to know
 **Pallas** is JAX's extension for writing custom kernels. 
 * It allows you to write kernel logic using Triton-like block semantics directly inside JAX.
 * Under the hood, if you are on a GPU, Pallas compiles your code down to Triton. If you are on a TPU, it compiles it down to Mosaic. 
-* It acts as an "escape hatch". If your standard JAX matrix-free operator is running too slowly because XLA didn't fuse it correctly, you can write a custom Pallas kernel, explicitly tell it how to tile the mesh cells into Shared Memory, and slot it seamlessly back into your larger JAX pipeline. 
+* It acts as an "escape hatch". If your standard JAX matrix-free operator is running too slowly because XLA didn't fuse it correctly, you can write a custom Pallas kernel, explicitly tell it how to tile the mesh cells into Shared Memory, and slot it seamlessly back into your larger JAX pipeline. Hopefully in this couse we won't need that.
 
 **Takeaway for the Course:** 
 We will rely on `jax.jit` and XLA for 95% of our work. But understanding HBM, Shared Memory, and Coalescing is mandatory, because it dictates *how* we structure our arrays and `einsum` operations in Python to help XLA generate the fastest possible code.
