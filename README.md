@@ -10,9 +10,8 @@ Repository layout
 -----------------
 - `lectures/` — lecture notes, exercises, and solution files.
 - `examples/` — runnable Python examples using JAX / NumPy.
-- `.github/`, `.gitignore`, `LICENSE.md`, `README.md` — repo metadata and CI.
 
-Course plan (high level)
+Course plan 
 ------------------------
 1. Einstein summation, Kronecker products. Split Kronecker product by dimension.
 2. Sum factorization: evaluation of the Laplace operator on a single Cartesian cell.
