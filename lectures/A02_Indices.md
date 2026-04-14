@@ -1,6 +1,3 @@
-Here are the revised, slower-paced blackboard notes for Lecture 2. We will demystify the indices by explicitly connecting them to physical slices of a 2D grid before proving anything.
-
-***
 
 # Lecture 2: Demystifying Indices and Slices (From Grid to Einstein)
 
