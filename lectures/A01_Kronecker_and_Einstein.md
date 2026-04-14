@@ -20,6 +20,78 @@ $$ (A \otimes B)(C \otimes D) = (AC) \otimes (BD) $$
 $$ (A \otimes B)^T = A^T \otimes B^T $$
 $$ (A \otimes B)^{-1} = A^{-1} \otimes B^{-1} \quad \text{(if } A, B \text{ are invertible)} $$
 
+
+### Proof of the Mixed-Product Property: $(A \otimes B)(C \otimes D) = (AC) \otimes (BD)$
+
+#### 1. Explicit Block Setup
+Recall the definition: $Q \otimes W$ means multiplying every scalar entry of $Q$ by the entire matrix $W$. 
+
+Let $A$ be an $m \times n$ matrix and $C$ be an $n \times p$ matrix. Writing out the Kronecker products $A \otimes B$ and $C \otimes D$ explicitly as block matrices, we have:
+
+$$
+A \otimes B = \begin{bmatrix}
+a_{11}B & a_{12}B & \cdots & a_{1n}B \\
+a_{21}B & a_{22}B & \cdots & a_{2n}B \\
+\vdots & \vdots & \ddots & \vdots \\
+a_{m1}B & a_{m2}B & \cdots & a_{mn}B
+\end{bmatrix}
+$$
+
+$$
+C \otimes D = \begin{bmatrix}
+c_{11}D & c_{12}D & \cdots & c_{1p}D \\
+c_{21}D & c_{22}D & \cdots & c_{2p}D \\
+\vdots & \vdots & \ddots & \vdots \\
+c_{n1}D & c_{n2}D & \cdots & c_{np}D
+\end{bmatrix}
+$$
+
+#### 2. Block Matrix Multiplication
+Now, multiply these two large block matrices together. Just like standard matrix multiplication, we multiply a "block row" of the first matrix by a "block column" of the second matrix. 
+
+Let's compute just the very first block (top-left, position 1,1) of the resulting matrix:
+
+$$
+\text{Block}_{11} = \big[a_{11}B \quad a_{12}B \quad \cdots \quad a_{1n}B \big] 
+\begin{bmatrix}
+c_{11}D \\
+c_{21}D \\
+\vdots \\
+c_{n1}D
+\end{bmatrix}
+$$
+
+Expanding this dot product:
+$$ \text{Block}_{11} = (a_{11}B)(c_{11}D) + (a_{12}B)(c_{21}D) + \dots + (a_{1n}B)(c_{n1}D) $$
+
+##### 3. Commuting Scalars and Factoring
+Because the $a$'s and $c$'s are just regular scalar numbers, we can move them around freely and group the matrices $B$ and $D$ together:
+
+$$ \text{Block}_{11} = (a_{11}c_{11})BD + (a_{12}c_{21})BD + \dots + (a_{1n}c_{n1})BD $$
+
+Since every term is multiplied by the same matrix $(BD)$, we can factor $(BD)$ out:
+
+$$ \text{Block}_{11} = \underbrace{(a_{11}c_{11} + a_{12}c_{21} + \dots + a_{1n}c_{n1})}_{\text{This is exactly the dot product of A's 1st row and C's 1st col!}} BD $$
+
+Therefore:
+$$ \text{Block}_{11} = (AC)_{11} BD $$
+
+#### 4. Reassembling the Matrix
+If we repeat this exact same row-by-column block multiplication for *every* position $(i, j)$ in the new matrix, the $(i,j)$-th block will always be the dot product of $A$'s $i$-th row and $C$'s $j$-th column, multiplied by $BD$:
+
+$$
+(A \otimes B)(C \otimes D) = \begin{bmatrix}
+(AC)_{11}BD & (AC)_{12}BD & \cdots & (AC)_{1p}BD \\
+(AC)_{21}BD & (AC)_{22}BD & \cdots & (AC)_{2p}BD \\
+\vdots & \vdots & \ddots & \vdots \\
+(AC)_{m1}BD & (AC)_{m2}BD & \cdots & (AC)_{mp}BD
+\end{bmatrix}
+$$
+
+Looking at this final matrix, we see every entry of the matrix $(AC)$ is multiplying the entire matrix $(BD)$. By our very first definition, this is exactly $(AC) \otimes (BD)$.
+
+$$ \therefore (A \otimes B)(C \otimes D) = (AC) \otimes (BD) \quad \blacksquare $$
+
 ## 2. Dimensional Splitting
 
 In FEM on tensor-product elements (e.g., hexahedra), operations like the mass matrix or evaluation of basis functions decompose along spatial dimensions. 
