@@ -164,6 +164,16 @@ To put these architectural differences into perspective, let's look at the raw p
 > The CPU is a generalist; it handles messy, branching code brilliantly. The GPU is a specialist. **If**—and ONLY if—we structure our FEM solver as dense, coalesced tensor contractions, we gain access to 10 times the memory bandwidth and nearly 20 TeraFLOPs of compute power.
 
 > Intel Advanced Matrix Extensions (AMX) are the CPU-level equivalent of NVIDIA’s MMA (Matrix Multiply-Accumulate) units (commonly known as Tensor Cores). While traditional CPU instructions (like AVX-512) handle data in 1D vectors, AMX is designed to operate on 2D matrices (called "tiles") in a single operation.
+
+| GPU | Architecture | Bandwidth (GB/s) | Peak FP64 Vector (TFLOPS) | Peak FP64 Tensor (TFLOPS) | Min. AI Vector (FLOP/B) | Min. AI Tensor (FLOP/B) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **A100 (SXM)** | Ampere | 2,039 | 9.7 | 19.5 | 4.76 | 9.56 |
+| **H100 (SXM)** | Hopper | 3,350 | 34.0 | 67.0 | 10.15 | 20.00 |
+| **H200 (SXM)** | Hopper | 4,800 | 34.0 | 67.0 | 7.08 | 13.96 |
+| **B200 (SXM)** | Blackwell | 8,000 | 40.0 | 40.0 | 5.00 | 5.00 |
+| **MI250X** | CDNA 2 | 3,277 | 47.9 | 95.7 | 14.61 | 29.20 |
+| **MI300X** | CDNA 3 | 5,300 | 81.7 | 163.4 | 15.41 | 30.83 |
+| **MI325X** | CDNA 3 | 6,000 | 81.7 | 163.4 | 13.62 | 27.23 |
 ---
 
 ## 3. Memory Coalescing: The Key to GPU Performance

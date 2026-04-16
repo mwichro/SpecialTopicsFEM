@@ -22,8 +22,9 @@ i=3 │ U₃₁     │ U₃₂     │ U₃₃     │
 ```
 
 When we write a Kronecker product operator like $(B \otimes A)$ acting on $U$, the convention is:
-*   The **first** matrix ($B$) acts on the **first** index ($i$, the y-axis).
-*   The **second** matrix ($A$) acts on the **second** index ($j$, the x-axis).
+
+-   The **first** matrix ($B$) acts on the **first** index ($i$, the y-axis).
+-   The **second** matrix ($A$) acts on the **second** index ($j$, the x-axis).
 
 Let's break this down one dimension at a time.
 
@@ -32,8 +33,9 @@ Let's break this down one dimension at a time.
 ## 2. Operating on Horizontal Slices: $(I \otimes A)$
 
 Consider the operator $(I \otimes A)$ acting on our grid $U$ to produce a new grid $V$.
-*   $I$ (Identity) acts on the y-axis (index $i$). It does nothing.
-*   $A$ acts on the x-axis (index $j$).
+
+-   $I$ (Identity) acts on the y-axis (index $i$). It does nothing.
+-   $A$ acts on the x-axis (index $j$).
 
 **What does this mean physically?**
 Take a horizontal slice of our grid. A horizontal slice is a single row, where $i$ is fixed, and $j$ varies. Let's look at row $i$:
