@@ -11,6 +11,11 @@ Repository layout
 - `lectures/` — lecture notes, exercises, and solution files.
 - `examples/` — runnable Python examples using JAX / NumPy.
 
+To produce printable notes from markdown files (`.md`) run:
+ ```bash
+ pandoc -V geometry:margin=0.5in -o your_output_file.pdf  AXX_Lecture_note_file.md
+ ```
+
 Course plan 
 ------------------------
 1. Einstein summation, Kronecker products. Split Kronecker product by dimension.
