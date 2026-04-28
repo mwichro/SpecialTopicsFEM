@@ -83,7 +83,7 @@ $$ L^{-1} = \mathbf{Q} \Sigma^{-1} \mathbf{Q}^T $$
 
 ## 3. Generalizing to $M \neq I$ (Standard FEM)
 
-In standard FEM, $M$ is tridiagonal (or denser for higher $p$), not the identity. 
+In standard FEM, $M$ is not the identity.
 $$ L = M \otimes M \otimes D + M \otimes D \otimes M + D \otimes M \otimes M $$
 
 To apply the same trick, we must diagonalize $M$ and $D$ *simultaneously*.
