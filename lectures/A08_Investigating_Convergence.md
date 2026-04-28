@@ -106,7 +106,7 @@ for step in range(1, max_iter + 1):
         plt.plot(x, u, label=f'Iteration k={step}', marker='.', linewidth=2)
 
 # --- Formatting the Plot ---
-plt.title(f"Smoothing Property of Damped Jacobi ($\omega$={omega:.2f})")
+plt.title(f"Smoothing Property of Damped Jacobi ($\\omega$={omega:.2f})")
 plt.xlabel("Spatial coordinate $x$")
 plt.ylabel("Error / Solution $u(x)$")
 
