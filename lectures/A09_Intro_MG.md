@@ -193,3 +193,85 @@ $$ \| M_{TG} \| \le \frac{C_A C_S}{\nu} $$
 To guarantee convergence, we just need $\| M_{TG} \| < 1$. Because $C_A$ and $C_S$ are constants independent of the mesh size $h$, we simply choose the number of pre-smoothing steps $\nu$ such that:
 $$ \nu > C_A C_S $$
 The method converges, and importantly, the convergence rate does not degrade as we refine the mesh. $\blacksquare$
+
+
+
+
+## 9. The $\gamma$-Cycle (V-Cycles vs. W-Cycles)
+
+In our standard recursive algorithm (Section 6), we handled the coarse grid correction by calling the recursive function exactly *once* per level. What if the coarse grid problem is particularly difficult, and one recursive pass doesn't solve $A_H e_H = r_H$ accurately enough? 
+
+We can generalize our algorithm by introducing a parameter **$\gamma$**, which dictates exactly how many times we apply the coarse grid correction at each level.
+
+### 9.1 Modifying the Algorithm
+
+Let's rewrite the recursive step (Step 4) of our Multigrid algorithm to include $\gamma$. 
+
+**Function:** $u_h = \text{MGCycle}(A_h, u_h, f_h, \gamma)$
+1. **Pre-smooth:** Apply $\nu_1$ iterations of smoother.
+2. **Compute Residual:** $r_h = f_h - A_h u_h$
+3. **Restrict:** $r_H = P^T r_h$
+4. **Recursion ($\gamma$ times):** 
+   If on the coarsest grid: 
+       $e_H = A_H^{-1} r_H$ (Exact solve)
+   Else:
+       Set initial guess $e_H = \mathbf{0}$
+       **For $i = 1$ to $\gamma$:**
+           $e_H = \text{MGCycle}(A_H, e_H, r_H, \gamma)$
+5. **Prolong & Add:** $u_h \leftarrow u_h + P e_H$
+6. **Post-smooth:** Apply $\nu_2$ iterations of smoother.
+   **Return** $u_h$.
+
+*(Crucial detail for the board: Notice that in the loop, the first iteration uses an initial guess of $\mathbf{0}$, but the subsequent iterations use the updated error $e_H$ from the previous pass!)*
+
+> Draw the $v$-cycle ($\gamma =1$ ) and $w$-cycle ($\gamma=2$ ) on the board. There should be vertical axis: refinement level, finest grid on top, horizontal axis: step of execution. Mark smoothing with full circles, residual evaluation with open circles, and transfers with arrows.  Take picture from https://en.wikipedia.org/wiki/Multigrid_method#Computational_cost
+
+### 9.2 $\gamma = 1$: The V-Cycle
+
+If $\gamma = 1$, we recover our standard algorithm. We go straight down to the coarsest grid, and straight back up. 
+If we trace the execution of the grids over time, it draws the letter **V**.
+
+*   **Pros:** The absolute cheapest cycle per iteration. Very fast.
+*   **Cons:** The approximation of the exact Two-Grid inverse $A_H^{-1}$ might be quite loose, leading to a poorer convergence rate per cycle for tough PDEs.
+
+ 
+
+### 9.3 $\gamma = 2$: The W-Cycle
+
+If $\gamma = 2$, every time we drop to a coarse grid, we solve it twice before returning to the fine grid. 
+If we trace the grid execution over time for 3 levels, it looks like this:
+1. Down to Grid 2
+2. Down to Grid 3 (Solve exactly)
+3. Up to Grid 2
+4. **Down to Grid 3 again!** (Solve exactly)
+5. Up to Grid 2
+6. Up to Grid 1
+
+Tracing this path visually draws the letter **W**.
+
+*   **Pros:** By solving the coarse problem twice, the W-cycle drastically improves the accuracy of the Coarse Grid Correction. It behaves much closer to the idealized Two-Grid mathematical proof. It is highly robust for difficult, ill-conditioned PDEs.
+*   **Cons:** It requires more computational work per global iteration. 
+
+### 9.4 Computational Complexity (Is the W-Cycle too expensive?)
+
+You might worry that branching twice at every level causes an explosion in computational cost. Let's look at the asymptotic complexity.
+
+Let $W_h$ be the computational work (FLOPs) required to do smoothing and transfers on a grid with $N$ elements.
+Because we split cells in every dimension, a coarse grid in $d$-dimensions has roughly $1/2^d$ the number of elements.
+So, the work on the coarse grid is $W_H \approx \frac{1}{2^d} W_h$.
+
+The total work for a $\gamma$-cycle is bounded by the geometric series:
+$$ \text{Total Work} = W_h + \gamma W_H + \gamma^2 W_{HH} + \dots = W_h \sum_{k=0}^{\text{levels}} \left( \frac{\gamma}{2^d} \right)^k $$
+
+For this series to converge to a small constant bounded by $\mathcal{O}(N)$, we strictly need:
+$$ \frac{\gamma}{2^d} < 1 \implies \gamma < 2^d $$
+
+**The Takeaway:**
+*   In **1D ($d=1$)**: $2^1 = 2$. So $\gamma=2$ makes the ratio $2/2 = 1$. The W-cycle in 1D is technically $\mathcal{O}(N \log N)$, losing strict linear scaling!
+*   In **2D ($d=2$)**: $2^2 = 4$. So $\gamma=2$ gives a ratio of $2/4 = 1/2$. The W-cycle retains perfect $\mathcal{O}(N)$ complexity.
+*   In **3D ($d=3$)**: $2^3 = 8$. The ratio is $2/8 = 1/4$. The W-cycle is cheap relative to the fine grid work! 
+
+
+> In practice your milagage may vary: it all depends on the smoother. It is all about cost, $w$-cycle generates more work on coarser level and there migh just not be enough work to fully utilize the comutatitonal resources. 
+
+> **Personal opinion**: I have never seen any benefit from using $w$-cycle.
