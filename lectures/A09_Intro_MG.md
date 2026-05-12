@@ -19,7 +19,7 @@ This means *any* function that can be drawn using the coarse basis functions can
 
 Because $V_H \subset V_h$, we have a natural, exact mapping from the coarse space to the fine space. 
 Let $\Phi_i^H$ be a coarse basis function, and $\phi_j^h$ be the fine basis functions. 
-$$ \Phi_i^H = \sum_{j} P_{ji} \phi_j^h $$
+$$ \Phi_i^h = \sum_{j} P_{ji} \phi_j^H $$
 
 This defines our **Prolongation Matrix**, $P$. 
 *   $P : V_H \to V_h$
