@@ -91,7 +91,7 @@
 
 1. $\inf$-$\sup$ condition and LBB theorem. Statement of the theorem. The idea of proof: splitting into "divergence-free". Bonus point: names in LBB.
 2. Convergence of FEM for saddle-point problem.
-3. Why $Q_1$-$Q_1$ pair is not suitable for solving the Stokes problem? What can be done instead?
+3. Why $Q_1 - Q_1$ pair is not suitable for solving the Stokes problem? What can be done instead?
 4. Schur complement.
 5. Decomposition of block system into lower-triangular, diagonal, and upper triangular block matrix.
 6. How do we obtain blocks for preconditioners? Explain using Stokes problem as an example (what are $\tilde{A}$ and $\tilde{S}$)
