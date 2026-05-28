@@ -1,6 +1,18 @@
 """
 Standalone JAX example: Continuous-Galerkin Laplace solver on a Cartesian grid.
 
+NOTE: This code is written by Claude. It was based on my instruction and 
+source code from my larger project. (Even though Claude required guidiance and corrections).
+I checked convergence rates of MG, the agree with my implementation.
+
+So there are some fancy improvements, that were not intentional:
+- GLL nodes: nodes are actaully Legendre quadrature points.
+- Lumping mass: Legendre quadrature with p+1 points does not 
+have enough accuracy for integrating mass matrix of degree p.
+However, it is "close enough" and it allows performance improvements: 
+mass matrix becomes diagonal. 
+
+
 Layout
 ------
 Every field lives in a 6-D tensor `u[Z, Y, X, EZ, EY, EX]`:
@@ -21,7 +33,7 @@ What this file demonstrates
 4. Geometric h-multigrid: prolongation/restriction between two Cartesian
    grids of the same polynomial order, with a V-cycle on top of Jacobi.
 
-x64 must be enabled.
+x64 must be enabled, otherwise JAX will work using TF32 which has 1e-4 precision.
 """
 import jax
 import jax.numpy as jnp
