@@ -295,7 +295,8 @@ $$ \sigma_k = T_k\left(\frac{d}{c}\right) $$
 Our valid, properly normalized smoothing polynomial is therefore:
 $$ P_k(\lambda) = \frac{T_k(x(\lambda))}{\sigma_k} $$
 
-By construction, $P_k(0) = \frac{\sigma_k}{\sigma_k} = 1$. We now have an optimal, high-frequency-destroying polynomial that perfectly obeys the algebraic laws of iterative solvers.
+By construction, $P_k(0) = \frac{\sigma_k}{\sigma_k} = 1$.
+
 ## 3. Deriving the Recurrence for the Error
 
 Let's plug our mapped coordinate $x(\lambda)$ into the standard Chebyshev recurrence:
@@ -372,3 +373,56 @@ From definition, $\sigma_0 = T_0(d/c) = 1$, and $\sigma_1 = T_1(d/c) = d/c$.
 $$ \alpha_1 = \frac{2 \sigma_1}{c \sigma_2} = \frac{2 (d/c)}{c (2(d/c)(d/c) - 1)} = \frac{2d}{2d^2 - c^2} $$
 
 **Conclusion:** We have derived the 3-term recurrence algorithm. We compute $\alpha_k$ iteratively using only scalars $d$ and $c$, and update the vectors completely safely without ever explicitly knowing the polynomial roots!
+
+----
+
+##  $\sigma_k$ seems to be independent of $k$, can you explain that? 
+
+Actually, **$\sigma_k$ is heavily dependent on $k$**! In fact, the way $\sigma_k$ changes with $k$ is the exact mathematical reason why Chebyshev smoothing is so insanely fast.
+
+Let's break down exactly what $\sigma_k$ is and why it grows exponentially with $k$.
+
+### 1. Why $\sigma_k$ depends on $k$
+
+Recall the definition of our scaling factor:
+$$ \sigma_k = T_k\left(\frac{d}{c}\right) $$
+Here, $\frac{d}{c}$ is a fixed constant (derived from our eigenvalue bounds), but the function itself is $T_k$, the Chebyshev polynomial of degree $k$. 
+
+Let's write out the first few values explicitly using the Chebyshev polynomials ($T_0(x)=1$, $T_1(x)=x$, $T_2(x)=2x^2-1$, etc.):
+
+*   **For $k = 0$:** $\sigma_0 = 1$
+*   **For $k = 1$:** $\sigma_1 = \left( \frac{d}{c} \right)$
+*   **For $k = 2$:** $\sigma_2 = 2\left( \frac{d}{c} \right)^2 - 1$
+*   **For $k = 3$:** $\sigma_3 = 4\left( \frac{d}{c} \right)^3 - 3\left( \frac{d}{c} \right)$
+
+As you can see, $\sigma_k$ changes at every single iteration $k$. 
+
+### 2. The Exponential Growth of $\sigma_k$
+
+Let's look closely at the constant $\frac{d}{c}$. 
+$$ d = \frac{\lambda_{\max} + \lambda_{cut}}{2}, \quad c = \frac{\lambda_{\max} - \lambda_{cut}}{2} $$
+Because eigenvalues are strictly positive ($\lambda_{\max} > \lambda_{cut} > 0$), the center $d$ is strictly greater than the radius $c$. Therefore:
+$$ \frac{d}{c} > 1 $$
+
+A famous property of Chebyshev polynomials $T_k(x)$ is that while they politely oscillate between $-1$ and $1$ when $x \in [-1, 1]$, **they explode exponentially when $x > 1$ or $x < -1$.**
+
+Since $\frac{d}{c} > 1$, the sequence of values $\sigma_0, \sigma_1, \sigma_2, \dots$ grows exponentially to infinity as $k$ increases.
+
+### 3. Why this is the "Magic" of Chebyshev
+
+Why do we care that $\sigma_k$ grows exponentially? Look back at our normalized error polynomial:
+$$ P_k(\lambda) = \frac{T_k(x(\lambda))}{\sigma_k} $$
+
+Remember our goal: we want to minimize this polynomial over the high-frequency range $\lambda \in [\lambda_{cut}, \lambda_{\max}]$.
+In that high-frequency range, our mapped coordinate $x(\lambda)$ falls exactly inside $[-1, 1]$. 
+
+Inside $[-1, 1]$, the numerator $T_k(x)$ is just oscillating bounded by $1$:
+$$ | T_k(x(\lambda)) | \le 1 $$
+
+Therefore, the maximum possible error remaining in the high frequencies after $k$ steps is bounded entirely by our scaling factor:
+$$ \max_{\text{high freq}} | P_k(\lambda) | \le \frac{1}{|\sigma_k|} $$
+
+**The Conclusion:**
+Because $\sigma_k$ grows *exponentially* with $k$, the maximum high-frequency error $\frac{1}{|\sigma_k|}$ decays *exponentially* toward zero with every iteration. 
+
+If $\sigma_k$ were independent of $k$, the method wouldn't converge at all! It is precisely the fact that the Chebyshev polynomials explode at the origin ($x=d/c$) that forces the normalized polynomial to flatten out exponentially across the rest of the spectrum.
