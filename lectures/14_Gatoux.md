@@ -1,6 +1,3 @@
-Here are the detailed teaching notes for the next two lectures. The first lecture builds the mathematical foundation for taking functional derivatives in FEM (Gateaux derivatives). The second lecture directly applies these tools to derive the non-linear FEM formulation for finite-strain elasticity, exactly as presented in Section 2.1 of the recent paper *Matrix-Free Methods for Finite-Strain Elasticity* (Wichrowski et al., 2025).
-
----
 
 # Lecture 15: From Energy to the Weak Form (Gateaux Derivatives)
 
