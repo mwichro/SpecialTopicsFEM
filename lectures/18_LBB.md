@@ -82,7 +82,7 @@ But $\text{Im}(B)$ is a subspace of $Q'$ whose dimension equals $\dim Q'$. A sub
 $$ \text{Im}(B) = Q'. $$
 **Hence $B$ is surjective.**
 
-**Why this works without the Closed Range Theorem.**
+**Why Closed Range Theorem is important**
 In infinite dimensions, "injective adjoint" only gives a *dense* image for $B$, and one needs the range to be *closed* (the Closed Range Theorem, which the LBB inequality is exactly designed to supply) before concluding surjectivity. In finite dimensions every subspace is automatically closed and dimensions are finite, so the equality of ranks plus a counting argument immediately upgrades "$B^*$ injective" to "$B$ surjective." The only role of the constant $\beta > 0$ here is to guarantee $\text{Ker}(B^*) = \{0\}$; in Part 4 the *quantitative* value of $\beta$ resurfaces to control the size of the solution.
 
 #### Part 2: Existence
