@@ -54,14 +54,36 @@ Define the kernel of $B$ as $Z = \{u \in V: b(u,q) = 0 \quad \forall q \in Q\}$.
 
 #### Part 1: Why LBB implies $B$ is surjective
 *This is the most critical deduction from the LBB condition.*
-The LBB condition can be rewritten using the operator $B^*: Q \to V'$ as:
-$$ \|B^* q\|_{V'} \ge \beta \|q\|_Q \quad \forall q \in Q $$
-1. **Injectivity:** If $B^* q = 0$, the inequality forces $\|q\|_Q \le 0 \implies q = 0$. Thus, $Ker(B^*) = \{0\}$, meaning $B^*$ is injective.
-2. **Surjectivity of $B$:** By the Closed Range Theorem, the image of $B$ is the polar space of the kernel of $B^*$: 
-   $$ \text{Im}(B) = (\text{Ker}(B^*))^0 $$
-   Since $\text{Ker}(B^*) = \{0\}$, we are asking for the polar space of the zero vector. What functionals vanish when evaluated on the zero vector? *All of them.* 
-   Therefore, $\text{Im}(B) = \{0\}^0 = Q'$. 
-   Because the image of $B$ is the entire space $Q'$, **the operator $B$ is perfectly surjective.**
+
+We work entirely in **finite dimensions**: $V$ and $Q$ are finite-dimensional Hilbert spaces (as they are after discretization by finite elements). This lets us avoid the heavy machinery of the Closed Range Theorem and argue using nothing more than the rank–nullity theorem and a single inequality.
+
+**Step 0: Translate LBB into an operator inequality.**
+Recall that $b(v,q) = \langle Bv, q\rangle = \langle v, B^*q\rangle$, where $B: V \to Q'$ and its adjoint (transpose) $B^*: Q \to V'$. The supremum in the LBB condition is exactly the dual norm of $B^*q$:
+$$ \sup_{v \in V} \frac{b(v,q)}{\|v\|_V} = \sup_{v \in V} \frac{\langle v, B^*q\rangle}{\|v\|_V} = \|B^*q\|_{V'}. $$
+So the inf–sup condition is precisely the statement that $B^*$ is **bounded below**:
+$$ \|B^* q\|_{V'} \ge \beta \|q\|_Q \quad \forall q \in Q. \tag{$\star$} $$
+
+**Step 1: $B^*$ is injective.**
+Suppose $B^* q = 0$. Then $(\star)$ gives $0 = \|B^*q\|_{V'} \ge \beta \|q\|_Q$, and since $\beta > 0$ this forces $\|q\|_Q \le 0$, i.e. $q = 0$. Hence
+$$ \text{Ker}(B^*) = \{0\}. $$
+
+**Step 2: From injectivity of $B^*$ to surjectivity of $B$ — by dimension counting.**
+This is where finite-dimensionality does the work, replacing the Closed Range Theorem.
+
+First, a basic fact: a linear map and its adjoint have the **same rank**, $\dim \text{Im}(B) = \dim \text{Im}(B^*)$. (In coordinates, $B^*$ is represented by the transpose of the matrix of $B$, and a matrix and its transpose have equal rank — the row rank equals the column rank.)
+
+Now apply rank–nullity to $B^*: Q \to V'$:
+$$ \dim Q = \dim \text{Ker}(B^*) + \dim \text{Im}(B^*) = 0 + \dim \text{Im}(B^*), $$
+using Step 1. Therefore $\dim \text{Im}(B^*) = \dim Q$. Combining with equal ranks,
+$$ \dim \text{Im}(B) = \dim \text{Im}(B^*) = \dim Q = \dim Q', $$
+where the last equality holds because a finite-dimensional space and its dual have the same dimension.
+
+But $\text{Im}(B)$ is a subspace of $Q'$ whose dimension equals $\dim Q'$. A subspace of a finite-dimensional space that has the full dimension must be the whole space:
+$$ \text{Im}(B) = Q'. $$
+**Hence $B$ is surjective.**
+
+**Why this works without the Closed Range Theorem.**
+In infinite dimensions, "injective adjoint" only gives a *dense* image for $B$, and one needs the range to be *closed* (the Closed Range Theorem, which the LBB inequality is exactly designed to supply) before concluding surjectivity. In finite dimensions every subspace is automatically closed and dimensions are finite, so the equality of ranks plus a counting argument immediately upgrades "$B^*$ injective" to "$B$ surjective." The only role of the constant $\beta > 0$ here is to guarantee $\text{Ker}(B^*) = \{0\}$; in Part 4 the *quantitative* value of $\beta$ resurfaces to control the size of the solution.
 
 #### Part 2: Existence
 Because $B$ is surjective, for any data $G \in Q'$, we can definitively find a "particular" velocity $u_g \in V$ such that $B u_g = G$ (which means $b(u_g, q) = G[q]$).
