@@ -3,10 +3,10 @@
 
 # Lecture: Proving the Continuous LBB Condition for Stokes
 
-Proving the continuous LBB condition directly from functional analysis is famously abstract (often invoking the Closed Range Theorem or Nečas's Inequality). However, for a blackboard lecture, there is a much more intuitive, PDE-based path. We will prove that the continuous LBB condition is exactly equivalent to solving a specific boundary-value problem: finding a velocity field that "absorbs" any given pressure field.
+Proving the continuous LBB condition directly from functional analysis is abstract (it typically invokes the Closed Range Theorem or Nečas's inequality). There is a more constructive, PDE-based path that is better suited to a lecture. We will show that the continuous LBB condition is equivalent to solving a specific boundary-value problem: finding a velocity field whose divergence reproduces any given pressure field.
 
 
-**Goal:** We have relied on the fact that the continuous LBB condition holds for the Stokes equations to prove everything else (Brezzi's conditions, Fortin's trick). Today, we actually prove it. 
+**Goal:** We have relied on the continuous LBB condition for the Stokes equations to establish everything else (Brezzi's conditions, Fortin's trick). Here we prove it. 
 
 ## 1. The Formal Statement and the Zero-Mean Pressure Space
 
@@ -25,8 +25,8 @@ Evaluate the numerator of the LBB condition:
 $$ b(v, C) = -\int_\Omega (\nabla \cdot v) C \, dV = -C \int_\Omega \nabla \cdot v \, dV $$
 By the Divergence Theorem (Gauss's Theorem):
 $$ b(v,C) = -C \int_\Omega \nabla\cdot v\,dV = -C \int_{\partial \Omega} v \cdot n \, dS . $$
-But because $v \in H^1_0$, $v = 0$ on the boundary! Thus, $b(v, C) = 0$ for *every possible velocity*. 
-If $b(v, q) = 0$ for all $v$, the supremum in the numerator is $0$ while $\|q\|_Q\neq 0$, so the quotient is $0$, the infimum over $q$ is $0$, and LBB fails instantly with $\beta=0$. **We must factor out the constant pressure mode** — equivalently, we measure pressure only up to a constant, which is exactly what the physics says (only $\nabla p$ enters the momentum equation). Quotienting $L^2$ by constants and choosing the zero-mean representative gives precisely $L^2_0(\Omega)$.
+But because $v \in H^1_0$, $v = 0$ on the boundary, so $b(v, C) = 0$ for *every* velocity. 
+If $b(v, q) = 0$ for all $v$, the supremum in the numerator is $0$ while $\|q\|_Q\neq 0$, so the quotient is $0$, the infimum over $q$ is $0$, and LBB fails with $\beta=0$. **We must factor out the constant pressure mode** — equivalently, we measure pressure only up to a constant, which is exactly what the physics says (only $\nabla p$ enters the momentum equation). Quotienting $L^2$ by constants and choosing the zero-mean representative gives precisely $L^2_0(\Omega)$.
 
 ---
 
@@ -57,7 +57,7 @@ This holds for the chosen $q$, so dividing the bound by $\|q\|_{L^2}=\|q\|_Q$ gi
 $$ \sup_{v\in V}\frac{b(v,q)}{\|v\|_V\|q\|_Q}\ge \frac1C \qquad\text{for every } q\in Q, $$
 and taking the infimum over $q$ yields $\beta = \tfrac1C > 0$. $\blacksquare$
 
-*(Teacher note: read off what was used. The matching property turned the bilinear form into $\|q\|^2$; the bound turned it into a single power of $\|q\|$. So LBB is *exactly* the statement that the divergence operator is surjective onto $L^2_0$ with a uniform bound — "can it generate any zero-mean scalar field, cheaply?")*
+*(Note what was used: the matching property turned the bilinear form into $\|q\|^2$, and the bound turned it into a single power of $\|q\|$. So LBB is the statement that the divergence operator is surjective onto $L^2_0$ with a uniform bound.)*
 
 > **The other direction, (LBB) $\implies$ (SURJ), for completeness.**
 > This is the genuinely abstract half. LBB says $B^\top$ (the gradient, acting on pressures) is bounded below: $\|B^\top q\|_{V'}\ge\beta\|q\|_Q$. By the **Closed Range Theorem**, $B^\top$ bounded below is equivalent to $B$ having closed range *and* being surjective onto $(\ker B^\top)^\circ$. Since LBB also forces $\ker B^\top=\{0\}$ on $Q=L^2_0$, $B$ is onto all of $Q$, and the open mapping theorem supplies the uniform bound $C=1/\beta$. We do **not** need this direction below — we only build velocities — but it explains why the equivalence is exact rather than one-sided.
@@ -77,15 +77,15 @@ Consider the auxiliary Neumann problem for a scalar potential $\phi$:
 $$ \Delta \phi = -q \quad \text{in } \Omega $$
 $$ \nabla \phi \cdot n = 0 \quad \text{on } \partial \Omega $$
 Does a solution to this exist? By the Fredholm alternative, a purely Neumann Poisson problem only has a solution if the right-hand side integrates to zero. 
-We check: $\int_\Omega -q \, dV = 0$. Yes! Because we specifically restricted our pressure space to $L^2_0(\Omega)$. 
+We check: $\int_\Omega -q \, dV = 0$, which holds because we restricted the pressure space to $L^2_0(\Omega)$. 
 
 So, $\phi$ exists. By standard elliptic regularity, $\|\phi\|_{H^2} \le C \|q\|_{L^2}$.
 Now define our first velocity attempt:
 $$ v_1 = \nabla \phi $$
 *Check the properties:* 
-*   Divergence: $-\nabla \cdot v_1 = -\Delta \phi = q$. (Perfect!)
-*   Boundary: $v_1 \cdot n = \nabla \phi \cdot n = 0$. (Normal velocity is zero).
-*   *The Catch:* The tangential velocity on the boundary is **not** necessarily zero. So $v_1 \notin H^1_0$.
+*   Divergence: $-\nabla \cdot v_1 = -\Delta \phi = q$, as required.
+*   Boundary: $v_1 \cdot n = \nabla \phi \cdot n = 0$, so the normal velocity vanishes.
+*   *The catch:* the tangential velocity on the boundary is **not** necessarily zero, so $v_1 \notin H^1_0$.
 
 ### Step 2: The Boundary Corrector
 The catch above is the only thing standing between us and $H^1_0$: $v_1$ has the right divergence but the wrong (tangential) trace. So we subtract a second field $v_2$ that carries away that trace *without* injecting any divergence. We require:
@@ -108,11 +108,47 @@ $$ v_q = v_1 - v_2 $$
 
 ## 4. Summary and Conclusion
 
-We have successfully proven the continuous LBB condition!
+We have proven the continuous LBB condition.
 
-1. We showed that proving LBB is identical to proving that for any pressure $q$, we can find a velocity $v$ that satisfies $-\nabla \cdot v = q$.
-2. We used the zero-mean property of the pressure to guarantee a solution to an auxiliary Poisson equation.
-3. We used a boundary corrector to satisfy the no-slip condition.
-4. Elliptic regularity provided the necessary bound $C$, proving that $\beta = 1/C > 0$.
+1. We reduced LBB to the surjectivity statement: for any pressure $q$, there is a velocity $v$ with $-\nabla \cdot v = q$ and a uniform bound.
+2. We used the zero-mean property of the pressure to guarantee a solution to an auxiliary Neumann–Poisson equation.
+3. We used a boundary corrector to recover the no-slip condition.
+4. Elliptic regularity provided the bound $C$, giving $\beta = 1/C > 0$.
 
-*(This brilliantly ties together everything the students have learned: why we need $L^2_0$, how divergence works, and how PDEs are used as tools to prove abstract functional analysis theorems!)*
+This connects three threads from the course: why we need $L^2_0$, how the divergence operator acts, and how a PDE construction can establish an abstract functional-analytic estimate.
+
+---
+
+## 5. Practical Application: Chorin's Projection Method
+
+The proof above is not only an existence argument: its central step — *split a field into a gradient part and a divergence-free part, using a Poisson equation as the bridge* — is a standard tool in computational fluid dynamics. The same Helmholtz decomposition that produced our velocity $v_q$ reappears as a time-stepping scheme for the **incompressible Navier–Stokes equations**:
+$$ \partial_t u + (u\cdot\nabla)u - \nu\,\Delta u + \nabla p = f, \qquad \nabla\cdot u = 0, \qquad u|_{\partial\Omega}=0. $$
+
+The difficulty is the same one LBB is about: the pressure $p$ is **not** a prognostic variable with its own evolution equation. It is a **Lagrange multiplier** whose only job is to enforce $\nabla\cdot u = 0$. Chorin's method (1968) sidesteps the coupled saddle-point solve by *decoupling* velocity and pressure at each time step — and the tool that lets it do so is exactly our decomposition.
+
+### The Helmholtz–Hodge decomposition (the engine)
+**Theorem.** Any vector field $w \in L^2(\Omega)^d$ splits *uniquely and orthogonally* as
+$$ w = u + \nabla\phi, \qquad \nabla\cdot u = 0,\quad u\cdot n|_{\partial\Omega}=0. $$
+The two pieces are $L^2$-orthogonal, $\int_\Omega u\cdot\nabla\phi\,dV = 0$ (integrate by parts and use $\nabla\cdot u=0$, $u\cdot n=0$). To compute the split, take the divergence:
+$$ \nabla\cdot w = \Delta\phi, \qquad \nabla\phi\cdot n = w\cdot n \text{ on }\partial\Omega, $$
+a Neumann–Poisson problem — *the very same one* we solved in Step 1 of the proof. Then $u = w - \nabla\phi$ is the divergence-free projection $\mathbb{P}\,w$.
+
+### The algorithm (one time step $u^n \to u^{n+1}$, step size $\Delta t$)
+1.  **Predictor — ignore the constraint.** Advance momentum *without* the pressure term, producing an intermediate velocity $u^\star$ that is generally **not** divergence-free:
+    $$ \frac{u^\star - u^n}{\Delta t} + (u^n\cdot\nabla)u^n - \nu\,\Delta u^\star = f^{n+1}, \qquad u^\star|_{\partial\Omega}=0. $$
+    This is a (vector) advection–diffusion solve — symmetric positive definite, with no saddle point.
+
+2.  **Projection — restore incompressibility.** We *want* $u^{n+1}$ to be the divergence-free part of $u^\star$. Writing the (skipped) pressure term back in,
+    $$ \frac{u^{n+1}-u^\star}{\Delta t} = -\nabla p^{n+1}, \qquad \nabla\cdot u^{n+1}=0. $$
+    This is a Helmholtz decomposition of $u^\star$: $u^\star = u^{n+1} + \Delta t\,\nabla p^{n+1}$. Taking the divergence gives the **pressure Poisson equation**
+    $$ \Delta p^{n+1} = \frac{1}{\Delta t}\,\nabla\cdot u^\star, \qquad \nabla p^{n+1}\cdot n = 0 \text{ on }\partial\Omega. $$
+
+3.  **Correct.** Subtract the gradient to land on the divergence-free manifold:
+    $$ u^{n+1} = u^\star - \Delta t\,\nabla p^{n+1}. $$
+
+### Payoff and caveats
+*   **Why it works:** Steps 2–3 are the projection $u^{n+1}=\mathbb{P}\,u^\star$ onto divergence-free fields. The indefinite Stokes saddle-point system is replaced by **one symmetric vector solve and one scalar Poisson solve** per step, both of which are standard and parallelizable.
+*   **The LBB connection:** solvability of the pressure Poisson equation requires the right-hand side $\tfrac1{\Delta t}\nabla\cdot u^\star$ to be compatible (zero mean against the Neumann data) — the same Fredholm/zero-mean condition that forced us into $L^2_0$ above. At the *discrete* level, choosing velocity/pressure spaces so that this projection is stable is the discrete LBB condition.
+*   **The price of decoupling:** the artificial Neumann condition $\nabla p\cdot n = 0$ is not satisfied by the true pressure, which produces a numerical boundary layer and limits the basic scheme to first order in $\Delta t$ for the pressure. Incremental and rotational pressure-correction variants (Goda; Timmermans; Guermond–Shen) modify the boundary condition and recover higher order, but the structure is still predict → Poisson solve → project.
+
+The "Poisson trick plus boundary corrector" used to *prove* LBB is the same construction that, applied once per time step, *solves* Navier–Stokes in practice.
