@@ -19,7 +19,7 @@ $$ \inf_{q \in Q} \sup_{v \in V} \frac{-\int_\Omega (\nabla \cdot v) q \, dV}{\|
 *   **Pressure ($Q$):** $L^2_0(\Omega)$. This is the space of square-integrable functions with **strictly zero mean**. 
     $$ L^2_0(\Omega) = \left\{ q \in L^2(\Omega) : \int_\Omega q \, dV = 0 \right\} $$
 
-**Why Zero-Mean Pressure? (Blackboard "Aha!" Moment)**
+**Why Zero-Mean Pressure?**
 What if we allowed a constant pressure $q = C \neq 0$ everywhere? 
 Evaluate the numerator of the LBB condition:
 $$ b(v, C) = -\int_\Omega (\nabla \cdot v) C \, dV = -C \int_\Omega \nabla \cdot v \, dV $$
