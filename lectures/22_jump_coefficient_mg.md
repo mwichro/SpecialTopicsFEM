@@ -19,12 +19,12 @@ Discretizing with standard linear finite elements on a quasi-uniform mesh of siz
 $$ \mathcal{A}\mu = b, \qquad a_{ij} = \int_\Omega \omega\, \nabla \phi_i \cdot \nabla \phi_j, $$
 where $\mathcal{A}$ is the (symmetric positive definite) stiffness matrix.
 
-Throughout we use the **weighted norms**
+Let $\nu$ denote the coefficient vector of the finite element function $v$. Throughout we use the **weighted norms**
 $$
 \|v\|_{0,\omega}^2 = \int_\Omega \omega\, v^2, \qquad
 |v|_{1,\omega}^2 = \int_\Omega \omega\, |\nabla v|^2 = \nu^t \mathcal{A}\nu,
 $$
-so that the energy inner product is exactly the bilinear form of the problem, and $\nu$ denotes the coefficient vector of the finite element function $v$.
+so that the energy inner product is exactly the bilinear form of the problem.
 
 ### The Challenge
 

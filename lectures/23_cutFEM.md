@@ -118,12 +118,61 @@ $$ A_h(u_h, v_h) := a_h(u_h, v_h) + j(u_h, v_h) = L_h(v_h) \quad \forall v_h \in
 
 We will now prove that the bilinear form $A_h(\cdot, \cdot)$ is coercive with a constant that is independent of how the boundary cuts the mesh.
 
-**Key Lemma 1 (Gradient Extension):** There exists a constant $C_{ext}$, independent of the cut geometry $\epsilon_T$, such that for any $v_h \in V_h$ and any cut element $T$,
-$$ \| \nabla v_h \|_{L^2(T)}^2 \leq C_{ext} \left( \| \nabla v_h \|_{L^2(T_\Omega)}^2 + \sum_{F \in \mathcal{F}_{ghost}, F \subset \partial T} h_F \int_F \llbracket \partial_n v_h \rrbracket^2 \, ds \right) $$
 
-*Proof Sketch:* This is a Poincare-type inequality. If the gradient norm on $T_\Omega$ is zero and the jumps of the normal derivative across all faces are zero, it implies that the polynomial gradient $\nabla v_h$ is constant on $T$ and matches the gradient of its neighbors. By extending this argument through a patch of elements connected to the stable interior of $\Omega$, one can show that $\nabla v_h$ must be zero on the entire element $T$. A full proof uses a scaling argument and contradiction on a reference element.
+### **Key Lemma 1 (Ghost Penalty Gradient Extension):**
 
-**Key Lemma 2 (Stabilized Trace Inequality):** There exists a constant $C_{tr}^*$, independent of the cut geometry, such that
+ Let $T \in \mathcal{T}_h$ be a cut element. Under standard mesh assumptions, there exists a local patch of elements $\omega_T$ containing $T$, and a constant $C_{ext} > 0$ independent of the cut geometry $\epsilon_T$, such that for any $v_h \in V_h$:
+$$ \| \nabla v_h \|_{L^2(T)}^2 \leq C_{ext} \left( \| \nabla v_h \|_{L^2(\omega_T \cap \Omega)}^2 + \sum_{F \in \mathcal{F}_{ghost} \cap \omega_T} h_F \int_F \llbracket \partial_n v_h \rrbracket^2 \, ds \right) $$
+
+**Proof:**
+**Step 1: The Path to a "Healthy" Element**
+Because the background mesh $\mathcal{T}_{bg}$ is quasi-uniform and the boundary $\Gamma$ is well-resolved by the mesh size $h$, any arbitrarily small cut element $T$ is located near an element deeply inside the physical domain. 
+Therefore, there exists a sequence of elements $T_m, T_{m-1}, \dots, T_0$ such that:
+1. $T_m = T$ is our cut element.
+2. $T_0$ is a "healthy" interior element, meaning a strictly positive fraction of its volume is in the physical domain: $|T_0 \cap \Omega| \geq c_0 |T_0|$, where $c_0 > 0$ is independent of the cut.
+3. Adjacent elements $T_i$ and $T_{i-1}$ share an interior face $F_i$.
+4. The number of elements in this path, $m$, is bounded by a small integer $N$ depending only on mesh regularity, not on the cut.
+We define our patch as $\omega_T = \cup_{i=0}^m T_i$.
+
+**Step 2: Control on the Healthy Element**
+Because $T_0$ is "healthy" and $v_h$ is a polynomial, we do not suffer from the small-cut problem on $T_0$. By a standard polynomial scaling argument (or Remez-type inequality) on the shape-regular element $T_0$, the gradient norm over the whole element is bounded by the gradient norm over its physical part:
+$$ \| \nabla v_h \|_{L^2(T_0)}^2 \leq C_0 \| \nabla v_h \|_{L^2(T_0 \cap \Omega)}^2 $$
+where $C_0$ depends on $c_0$ but is independent of the small cut $\epsilon_T$.
+
+**Step 3: Transferring Control Across a Single Face**
+We now show how the DG ghost penalty transfers this control from $T_{i-1}$ to $T_i$. 
+Since $v_h \in P_1$, its gradient $\nabla v_h$ is a constant vector on each element. Let $\mathbf{G}_i = \nabla v_h|_{T_i}$. 
+Because our finite element space $V_h$ is continuous across the face $F_i$, the tangential derivative of $v_h$ is perfectly continuous. Therefore, the jump of the full gradient vector is entirely in the normal direction:
+$$ \llbracket \nabla v_h \rrbracket = \llbracket \partial_n v_h \rrbracket \mathbf{n}_{F_i} \implies |\mathbf{G}_i - \mathbf{G}_{i-1}|^2 = |\llbracket \partial_n v_h \rrbracket|^2 $$
+
+Using the simple algebraic inequality $|\mathbf{a}|^2 \leq 2|\mathbf{b}|^2 + 2|\mathbf{a}-\mathbf{b}|^2$, we can bound the gradient on $T_i$:
+$$ |\mathbf{G}_i|^2 \leq 2|\mathbf{G}_{i-1}|^2 + 2|\mathbf{G}_i - \mathbf{G}_{i-1}|^2 = 2|\mathbf{G}_{i-1}|^2 + 2|\llbracket \partial_n v_h \rrbracket|^2 $$
+
+Now we convert this pointwise bound into $L^2$ norms over the elements. Since the gradients are constant:
+$$ \| \nabla v_h \|_{L^2(T_i)}^2 = |T_i| |\mathbf{G}_i|^2 $$
+$$ |T_i| |\mathbf{G}_i|^2 \leq 2 \frac{|T_i|}{|T_{i-1}|} \left( |T_{i-1}| |\mathbf{G}_{i-1}|^2 \right) + 2 |T_i| |\llbracket \partial_n v_h \rrbracket|^2 $$
+
+By the shape regularity of the mesh, the volumes of adjacent elements are comparable ($|T_i| \approx |T_{i-1}|$), and the ratio of element volume to face area is proportional to $h$ (i.e., $|T_i| \leq C_{shape} h_{F_i} |F_i|$). 
+Substituting these geometric bounds yields:
+$$ \| \nabla v_h \|_{L^2(T_i)}^2 \leq C_1 \| \nabla v_h \|_{L^2(T_{i-1})}^2 + C_2 h_{F_i} \left( |F_i| |\llbracket \partial_n v_h \rrbracket|^2 \right) $$
+
+Because the jump is constant along the face, $\int_{F_i} \llbracket \partial_n v_h \rrbracket^2 ds = |F_i| |\llbracket \partial_n v_h \rrbracket|^2$. Thus:
+$$ \| \nabla v_h \|_{L^2(T_i)}^2 \leq C_1 \| \nabla v_h \|_{L^2(T_{i-1})}^2 + C_2 h_{F_i} \int_{F_i} \llbracket \partial_n v_h \rrbracket^2 ds $$
+
+**Step 4: Iterating Along the Path**
+We have successfully bounded the gradient on $T_i$ using the gradient on its neighbor $T_{i-1}$ plus the ghost penalty on the shared face. 
+Starting from our cut element $T_m = T$, we recursively apply the Step 3 inequality $m$ times until we reach the healthy element $T_0$:
+$$ \| \nabla v_h \|_{L^2(T)}^2 \leq C_1^m \| \nabla v_h \|_{L^2(T_0)}^2 + C_2 \sum_{i=1}^m C_1^{m-i} h_{F_i} \int_{F_i} \llbracket \partial_n v_h \rrbracket^2 ds $$
+
+Finally, we substitute the bound from Step 2 for the healthy element $T_0$:
+$$ \| \nabla v_h \|_{L^2(T)}^2 \leq C_1^m C_0 \| \nabla v_h \|_{L^2(T_0 \cap \Omega)}^2 + C_2 \max_{1 \le i \le m}(C_1^{m-i}) \sum_{i=1}^m h_{F_i} \int_{F_i} \llbracket \partial_n v_h \rrbracket^2 ds $$
+
+Since $m \leq N$, the constants do not blow up. Let $C_{ext}$ be the maximum of these accumulated constants. Noting that $T_0 \cap \Omega \subset \omega_T \cap \Omega$ and the faces $F_i$ belong to $\mathcal{F}_{ghost} \cap \omega_T$, we arrive at the final result:
+$$ \| \nabla v_h \|_{L^2(T)}^2 \leq C_{ext} \left( \| \nabla v_h \|_{L^2(\omega_T \cap \Omega)}^2 + \sum_{F \in \mathcal{F}_{ghost} \cap \omega_T} h_{F} \int_F \llbracket \partial_n v_h \rrbracket^2 ds \right) \quad \blacksquare $$
+
+### **Key Lemma 2 (Stabilized Trace Inequality):** 
+
+There exists a constant $C_{tr}^*$, independent of the cut geometry, such that
 $$ \| \partial_n v_h \|_{L^2(\Gamma \cap T)}^2 \leq C_{tr}^* h^{-1} \left( \| \nabla v_h \|_{L^2(T_\Omega)}^2 + j_T(v_h, v_h) \right) $$
 where $j_T$ is the contribution to the ghost penalty from faces of $T$.
 
@@ -136,7 +185,9 @@ where $j_T$ is the contribution to the ghost penalty from faces of $T$.
    $$ \| \partial_n v_h \|_{L^2(\Gamma \cap T)}^2 \leq C_{std} h^{-1} \left[ C_{ext} \left( \| \nabla v_h \|_{L^2(T_\Omega)}^2 + j_T(v_h, v_h) \right) \right] $$
 3. Set $C_{tr}^* = C_{std} C_{ext}$. This constant is independent of the cut. This completes the proof of the lemma.
 
-**Theorem (Coercivity of the Stabilized Form):** The bilinear form $A_h(v,v)$ is coercive on $V_h$ with a constant $\alpha > 0$ independent of the cut geometry.
+### **Theorem (Coercivity of the Stabilized Form):**
+
+ The bilinear form $A_h(v,v)$ is coercive on $V_h$ with a constant $\alpha > 0$ independent of the cut geometry.
 
 *Proof:*
 We start with the full bilinear form:
